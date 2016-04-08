@@ -2,6 +2,9 @@
 
 $(function () {
 	generateJson(function (schema) {
+		//printing JSON
+		$("#jsonContainer").text(JSON.stringify(schema, null, "  "));
+
 		var data = schema.array;
 		var inputs = schema.inputs;
 		
