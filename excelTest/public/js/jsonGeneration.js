@@ -104,16 +104,12 @@ function generateJson(generationCallback) {
 						inputValues[prop].values.push(value);
 					}
 				}
+
+				if(type === "date picker") {
+					inputValues[prop] = inputValues[prop] || {type: type};
+				}
 			}
 		}
 		return inputValues;
-	}
-
-	function strToDate(str) {
-		var year = Number(str.substring(0, 4));
-		var month = Number(str.substring(4,6));
-		var date = Number(str.substring(6, str.length));
-		console.log("%s, %s, %s", year, month, date);
-		return new Date(year, month-1, date);
 	}
 };

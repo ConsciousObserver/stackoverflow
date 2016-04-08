@@ -27,6 +27,7 @@ $(function () {
 		function getInput(prop, value, inputValues) {
 			var inputStr = "";
 			var labelStr = "<label for='" + prop + "'>" + prop + "</label>";
+			
 			if(!inputValues) {
 				inputStr = "<input name='" + prop + "' value='" + value + "'>";
 			} else if(inputValues.type === "dropdown") {
@@ -42,9 +43,21 @@ $(function () {
 					var checked = radioValue === value ? "checked" : "";
 					inputStr += "<input type='radio' name='" + prop + "' value='" + value + "' " + checked + ">" + radioValue + "</input>";
 				});
+			} else if(inputValues.type === "date picker") {
+				value = strToDate(value);
+				inputStr = "<input name='" + prop + "' value='" + value + "'>";
 			}
 			
 			return labelStr + inputStr;
 		}
 	});
+
+	function strToDate(str) {
+		str = str + "";
+		var year = Number(str.substring(0, 4));
+		var month = Number(str.substring(4,6));
+		var date = Number(str.substring(6, str.length));
+		console.log("%s, %s, %s", year, month, date);
+		return new Date(year, month-1, date);
+	}
 });
