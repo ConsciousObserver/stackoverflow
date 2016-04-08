@@ -1,0 +1,19 @@
+{
+  "name": "exceltest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.13.4",
+    "xlsx": "^0.8.0"
+  },
+  "devDependencies": {
+    "xlsx": "^0.8.0"
+  },
+  "scripts": {
+    "test": "node server.js",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
