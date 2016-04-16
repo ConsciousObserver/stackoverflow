@@ -1,0 +1,28 @@
+pre {
+	padding: 5px;
+}
+* {
+	margin: 2px;
+}
+.test-unit{
+	border: 2px solid black;
+	padding: 5px;
+}
+.test{
+	border: 1px solid gray;
+	background-color: #eef;
+	margin-top: 5px;
+}
+.expanded{
+	border: 1px solid gray;
+	background-color: #ffe;
+}
+.log{
+	border: 1px solid gray;
+	background-color: #ddd;
+}
+.error {
+	border: 1px solid gray;
+	background-color: #fff;
+	color: red;
+}
