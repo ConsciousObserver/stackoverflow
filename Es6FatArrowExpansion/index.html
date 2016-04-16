@@ -1,0 +1,181 @@
+<html>
+<head>
+<style>
+	.test, .expanded, .log{
+		border: 1px solid green;
+	}
+</style>
+</head>
+<body>
+<h3>Tests</h3>
+<pre class='test'>
+	//test0
+	var selectId = new Function('x', 'return x.map(a=>a.id)');;
+	var mappedArr = selectId([{id:'test'},{id:'test1'}]);
+	console.log("test0: " + JSON.stringify(mappedArr));
+	logDom("test0: " + JSON.stringify(mappedArr));
+
+	//test1 , with surrounding code
+	var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	var es6OddNumbers = numbers.filter(number => number % 2);
+	console.log("test1 : " + es6OddNumbers);
+	logDom("test1 : " + es6OddNumbers);
+
+	//test2, standalone fat arrow
+	var square = x => x * x;
+	console.log("test2: " + square(10));
+	logDom("test2: " + square(10));
+
+	//test3, with mutiple parameters, single line
+	var add = (a, b) => a + b;
+	console.log("test3: " + add(3, 4));
+	logDom("test3: " + add(3, 4));
+
+	//test4, test with surrounding like test1
+	var developers = [{name: 'Rob'}, {name: 'Jake'}];
+	var es6Output = developers.map(developer => developer.name);
+	console.log("test4: " + es6Output);
+	logDom("test4: " + es6Output);
+
+	//test5, empty braces, returns undefined
+	console.log("test5: " + ( ()=>{} )());
+	logDom("test5: " + ( ()=>{} )());
+
+	//test6, return empty object
+	console.log("test6: " + ( ()=>{return {}} )());
+	logDom("test6: " + ( ()=>{return {}} )());
+
+	//test7, working with the 'this' scope and multiline
+	function CounterES6() {
+	  this.seconds = 0;
+	  window.setInterval(() => {
+			this.seconds++;
+			console.log("test7: interval seconds: " + this.seconds);
+			logDom("test7: interval seconds: " + this.seconds);
+		}, 1000);
+	}
+
+	var counterB = new CounterES6();
+	window.setTimeout(() => {
+		var seconds = counterB.seconds;
+		console.log("test7: timeout seconds: " +counterB.seconds);
+		logDom("test7:   timeout seconds: " +counterB.seconds);
+	}, 1200);
+	
+	function logDom(str) {
+		var div = document.createElement("div");
+		div.innerText = str;
+		document.querySelector(".log").appendChild(div);
+	}
+</pre>
+
+<h3>Expansion Result</h3>
+<pre class="expanded">
+
+</pre>
+
+<h3>Logs</h3>
+<pre class="log">
+</pre>
+<script>
+
+(function () {
+	var tests = document.querySelectorAll('.test');
+	for(var i = 0; i < tests.length; i++) {
+		var testCode = tests[i].innerText;
+		var expandedCode = expandFatArrow(testCode);
+		console.log(expandedCode);
+		document.querySelector(".expanded").innerText = expandedCode;
+		eval(expandedCode);
+	};
+})();
+
+//start fat arrow utility
+function expandFatArrow(code) {
+	var arrowHeadRegex = RegExp(/(\((?:\w+,)*\w+\)|\(\)|\w+)[\r\t ]*=>\s*/);
+	var arrowHeadMatch = arrowHeadRegex.exec(code);
+	
+	if(arrowHeadMatch) {//if no match return as it is
+		var params = arrowHeadMatch[1];
+		if(params.charAt(0) !== "(") {
+			params = "(" + params + ")";
+		}
+		var index = arrowHeadMatch.index;
+		var startCode = code.substring(0, index);
+		
+		var bodyAndNext = code.substring(index + arrowHeadMatch[0].length);
+		
+		var curlyCount = 0;
+		var curlyPresent = false;
+		var singleLineBodyEnd = 0;
+		var bodyEnd = 0;
+		
+		for(var i = 0; i < bodyAndNext.length; i++) {
+			var ch = bodyAndNext[i];
+			if(ch === '{'){
+					curlyPresent = true;
+					curlyCount++;
+			} else if(ch === '}') {
+					curlyCount--;
+			} else if(!curlyPresent) {
+				//any character other than { or }
+				singleLineBodyEnd = getSingeLineBodyEnd(bodyAndNext, i);
+				break;
+			}
+			if(curlyPresent && curlyCount === 0) {
+				bodyEnd = i;
+				break;
+			}
+		}
+
+		if(curlyPresent) {
+			if(curlyCount !== 0) {
+				throw Error("Could not match curly braces for function at : " + index);
+			}
+			body = bodyAndNext.substring(0, bodyEnd+1);
+			
+			var restCode = bodyAndNext.substring(bodyEnd + 1);
+			var expandedFun = "(function " + params + body + ").bind(this)";
+			code = startCode + expandedFun + restCode;
+		} else {
+			if(singleLineBodyEnd <=0) {
+				throw Error("could not get function body at : " + index);
+			}
+			
+			body = bodyAndNext.substring(0, singleLineBodyEnd+1);
+			
+			restCode = bodyAndNext.substring(singleLineBodyEnd + 1);
+			expandedFun = "(function " + params + "{return " + body + "}).bind(this)";
+			code = startCode + expandedFun + restCode;
+		}
+
+		return expandFatArrow(code);//recursive call
+	}
+	return code;
+}
+function getSingeLineBodyEnd(bodyCode, startI) {
+	var braceCount = 0;
+	for(var i = startI; i < bodyCode.length; i++) {
+		var ch = bodyCode[i];
+		var lastCh = null;
+		if(i-1 >= 0 && !bodyCode[i-1].match(/[\t\r ]/)) {
+			lastCh = bodyCode[i-1];
+		}
+
+		if(ch === '{' || ch === '(') {
+			braceCount++;
+		} else if(ch === '}' || ch === ')') {
+			braceCount--;
+		}
+		
+		if(braceCount < 0 || (lastCh !== '.' && ch === '\n')) {
+			return i-1;
+		}
+	}
+	
+	return bodyCode.length;
+}
+//end fat arrow utility
+</script>
+</body>
+</html>
