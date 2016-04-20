@@ -25,11 +25,12 @@ public class TestMaze {
 		}
 	}
 	
-	private static void printPathOnMaze(Maze currentMaze, List<Cell> path) {
+	private static void printPathOnMaze(Maze maze, List<Cell> path) {
 		path.stream()
+			.filter(cell-> !maze.isStartCell(cell) && !maze.isEndCell(cell))
 			.forEach(cell-> cell.setCh('O'));
 		
-		currentMaze.printCells();
+		maze.printCells();
 	}
 
 	private static List<Cell> findPath(Maze currentMaze, Cell current) {
@@ -146,6 +147,10 @@ public class TestMaze {
 
 		public Cell getEndCell() {
 			return endCell;
+		}
+		
+		public boolean isStartCell(Cell cell) {
+			return startCell.getI() == cell.getI() && startCell.getJ() == cell.getJ();
 		}
 		
 		public boolean isEndCell(Cell cell) {
