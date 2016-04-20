@@ -12,49 +12,59 @@ public class TestMaze {
 	static List<Cell> resultPath = null;
 	
 	public static void main(String[] args) {
-		String filePath = "maze.txt";
+		String filePath = "maze2.txt";
 		Maze currentMaze = new Maze(filePath);
-		List<Cell> path = new ArrayList<>();
-		findPath(currentMaze, currentMaze.startCell, path);
+
+		findPath(currentMaze, currentMaze.startCell);
 		
-		System.out.println("Path size : " + path.size());
-		printPathOnMaze(currentMaze, resultPath);
+		if(resultPath == null) {
+			System.out.println("\nNo path exists for the Maze");
+		} else {
+			System.out.println("\nPath size : " + resultPath.size());
+			printPathOnMaze(currentMaze, resultPath);
+		}
 	}
 	
 	private static void printPathOnMaze(Maze currentMaze, List<Cell> path) {
 		path.stream()
-			.forEach(cell-> cell.setCh('0'));
+			.forEach(cell-> cell.setCh('O'));
 		
 		currentMaze.printCells();
 	}
 
-	private static List <Cell> findPath(Maze currentMaze, Cell current, List <Cell> path) {
+	private static List<Cell> findPath(Maze currentMaze, Cell current) {
 		if(currentMaze.isEndCell(current)) {
-			resultPath = path;
-			return path;
-		}
-		if(resultPath != null) {
-			return path;
-		}
-		if(Maze.isWall(current)) {
-			current.setVisitStatus(VisitStatus.VISITED);
-		} else {
-			current.setVisitStatus(VisitStatus.IN_PROGRESS);
-			List<Cell> neighbourList = currentMaze.getNeighbours(current);
+			resultPath = new ArrayList<>();
+			Cell traversalCell = current;
 			
-			long numOfNeighbours = neighbourList.stream()
-								.filter(cell -> cell.getVisitStatus() == VisitStatus.UNVISITED)
-								.count();
-			if(numOfNeighbours != 0) {
-				path.add(current);
+			while(traversalCell != null) {
+				resultPath.add(0, traversalCell);
+				traversalCell = traversalCell.getParentCell();
+			}
+			return resultPath;
+		}
+		
+		if(resultPath == null) {
+		
+			if(Maze.isWall(current)) {
+				current.setVisitStatus(VisitStatus.VISITED);
+			} else {
+				current.setVisitStatus(VisitStatus.IN_PROGRESS);
+				List<Cell> neighbourList = currentMaze.getNeighbours(current);
+				
 				neighbourList.stream()
 					.filter(cell -> cell.getVisitStatus() == VisitStatus.UNVISITED)
-					.forEach(neighbour -> findPath(currentMaze, neighbour, path));
+					.filter(cell -> cell.getVisitStatus() == VisitStatus.UNVISITED)
+					.forEach(neighbour -> {
+						neighbour.setParentCell(current);
+						findPath(currentMaze, neighbour);	
+					});
+				
+				current.setVisitStatus(VisitStatus.VISITED);
 			}
-			
-			current.setVisitStatus(VisitStatus.VISITED);
 		}
-		return path;
+		
+		return null;
 	}
 	
 	public static boolean isCellInPath(Cell cell, List<Cell> path) {
@@ -64,6 +74,9 @@ public class TestMaze {
 	public static class Cell {
 		private int i, j;
 		private char ch;
+		
+		private Cell parentCell;
+		
 		public enum VisitStatus {VISITED, IN_PROGRESS, UNVISITED};
 		
 		private VisitStatus visitStatus = VisitStatus.UNVISITED;
@@ -97,6 +110,14 @@ public class TestMaze {
 
 		public void setVisitStatus(VisitStatus visitStatus) {
 			this.visitStatus = visitStatus;
+		}
+
+		public Cell getParentCell() {
+			return parentCell;
+		}
+
+		public void setParentCell(Cell parentCell) {
+			this.parentCell = parentCell;
 		}
 	}
 	
